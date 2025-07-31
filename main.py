@@ -42,19 +42,41 @@ def serialized_stored_posts(posts: list[PostModel]):
 
 @app.get("/posts")
 def get_posts():
-    serialized_posts = serialized_stored_posts(all_posts)
     return JSONResponse(
         content={
-            "posts": serialized_posts
+            "posts": serialized_stored_posts(all_posts)
         },
         status_code=200
     )
+
 @app.post("/posts")
 def post(posts: list[PostModel]):
     for post in posts:
         all_posts.append(post)
-    serialized_posts = serialized_stored_posts(posts);
-    return serialized_posts
+    return JSONResponse(
+        content={
+            "posts": serialized_stored_posts(all_posts)
+        }, status_code=201
+    )
+
+@app.put("/posts")
+def put_posts(current_post: PostModel):
+    isAlready: bool = False
+    i: int = 0
+    for post in all_posts:
+        if (post.title == current_post.title):
+            isAlready = True
+        else: 
+            i = i + 1
+    if isAlready:
+        all_posts[i] = current_post
+    else:
+        all_posts.append(current_post)
+    return JSONResponse(content={
+        "new_posts": serialized_stored_posts(all_posts)
+    }, status_code=200)
+
+
 
 @app.get("/{full_path}")
 def not_found():
